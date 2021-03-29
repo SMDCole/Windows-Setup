@@ -489,7 +489,7 @@ $essentialtweaks.Add_Click({
 
 	Write-Host "Running O&O Shutup with Recommended Settings"
     Import-Module BitsTransfer		choco install shutup10 -y
-	Start-BitsTransfer -Source "https://raw.githubusercontent.com/ChrisTitusTech/win10script/master/ooshutup10.cfg" -Destination ooshutup10.cfg		OOSU10 ooshutup10.cfg /quiet
+	Start-BitsTransfer -Source "https://https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/ooshutup10.cfg" -Destination ooshutup10.cfg		OOSU10 ooshutup10.cfg /quiet
 	Start-BitsTransfer -Source "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -Destination OOSU10.exe	
 	./OOSU10.exe ooshutup10.cfg /quiet
 
