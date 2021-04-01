@@ -373,7 +373,7 @@ $Label20.location                = New-Object System.Drawing.Point(581,463)
 $Label20.Font                    = New-Object System.Drawing.Font('Microsoft Sans Serif',24)
 
 $Label21                         = New-Object system.Windows.Forms.Label
-$Label21.text                    = "- This will modify your system and I highly recommend backing up any important data prior to running!"
+$Label21.text                    = "- This will modify your system and it is highly recommended backing up any important data prior to running!"
 $Label21.AutoSize                = $true
 $Label21.width                   = 150
 $Label21.height                  = 10
