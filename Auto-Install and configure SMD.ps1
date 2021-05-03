@@ -480,6 +480,15 @@ $7zip.Add_Click({
 
 
 $essentialtweaks.Add_Click({ 
+    Write-Host "Disabling sleep and monitor timeout"
+    powercfg.exe -change -monitor-timeout-ac 0
+    powercfg.exe -change -monitor-timeout-dc 0
+    powercfg.exe -change -disk-timeout-ac 0
+    powercfg.exe -change -disk-timeout-dc 0
+    powercfg.exe -change -standby-timeout-ac 0
+    powercfg.exe -change -standby-timeout-dc 0
+    powercfg.exe -change -hibernate-timeout-ac 0
+    powercfg.exe -change -hibernate-timeout-dc 0
     Write-Host "Creating Restore Point incase something bad happens"
     Enable-ComputerRestore -Drive "C:\"
     Checkpoint-Computer -Description "RestorePoint1" -RestorePointType "MODIFY_SETTINGS"
