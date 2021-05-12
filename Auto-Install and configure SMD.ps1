@@ -449,7 +449,7 @@ $firefox.Add_Click({
 
 $gchrome.Add_Click({ 
     Write-Host "Installing Google Chrome"
-    choco install googlechrome -y
+    choco install googlechrome -y --ignore-checksums
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
@@ -480,7 +480,7 @@ $7zip.Add_Click({
 
 
 $essentialtweaks.Add_Click({ 
-    Write-Host "Disabling sleep and monitor timeout"
+    Write-Host "Disabling sleep and monitor timeout & setting timezone"
     powercfg.exe -change -monitor-timeout-ac 0
     powercfg.exe -change -monitor-timeout-dc 0
     powercfg.exe -change -disk-timeout-ac 0
@@ -489,6 +489,7 @@ $essentialtweaks.Add_Click({
     powercfg.exe -change -standby-timeout-dc 0
     powercfg.exe -change -hibernate-timeout-ac 0
     powercfg.exe -change -hibernate-timeout-dc 0
+    Set-TimeZone -Id "Mountain Daylight Time"
     Write-Host "Creating Restore Point incase something bad happens"
     Enable-ComputerRestore -Drive "C:\"
     Checkpoint-Computer -Description "RestorePoint1" -RestorePointType "MODIFY_SETTINGS"
