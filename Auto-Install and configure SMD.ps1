@@ -489,7 +489,7 @@ $essentialtweaks.Add_Click({
     powercfg.exe -change -standby-timeout-dc 0
     powercfg.exe -change -hibernate-timeout-ac 0
     powercfg.exe -change -hibernate-timeout-dc 0
-    Set-TimeZone -Id "Mountain Daylight Time"
+    Set-TimeZone -Id "Mountain Standard Time"
     Write-Host "Creating Restore Point incase something bad happens"
     Enable-ComputerRestore -Drive "C:\"
     Checkpoint-Computer -Description "RestorePoint1" -RestorePointType "MODIFY_SETTINGS"
