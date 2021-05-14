@@ -492,7 +492,7 @@ $essentialtweaks.Add_Click({
     powercfg.exe -change -standby-timeout-dc 0
     powercfg.exe -change -hibernate-timeout-ac 0
     powercfg.exe -change -hibernate-timeout-dc 0
-    Set-TimeZone -Id "Mountain Standard Time" -PassThru
+    Set-TimeZone -Id "Mountain Standard Time"
 
     Write-Host "Enabling F8 to boot to Safe Mode"
     cmd /c "bcdedit /set (default) bootmenupolicy legacy"
