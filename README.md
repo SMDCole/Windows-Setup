@@ -3,7 +3,7 @@ A setup script and resources for new systems coming through SystemsMD
 
 Run this in Powershell
 
-```https://git.io/JsGG3```
+```iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/JsGG3'))```
 
 Or
 
