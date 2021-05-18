@@ -291,7 +291,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
 
 #https://superuser.com/questions/1068382/how-to-remove-all-the-tiles-in-the-windows-10-start-menu
 #Unpins all tiles from the Start Menu
-    Write-Output "Unpinning all tiles from the start menu"
+    Write-Host "Unpinning all tiles from the start menu"
     (New-Object -Com Shell.Application).
     NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
     Items() |
@@ -307,7 +307,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
 
 
 
-
+ New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
     $Keys = @(
             
         #Remove Background Tasks
@@ -341,9 +341,9 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
         "HKCR:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
     )
         
-    #This writes the output of each key it is removing and also removes the keys listed above.
+    #Removes the keys listed above.
+    Write-Host "Removing Bloatware Keys from registry"
     ForEach ($Key in $Keys) {
-        Write-Output "Removing $Key from registry"
         Remove-Item $Key -Recurse
     }
 
@@ -357,21 +357,21 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
 
 
     #Disables Windows Feedback Experience
-    Write-Output "Disabling Windows Feedback Experience program"
+    Write-Host "Disabling Windows Feedback Experience program"
     $Advertising = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
     If (Test-Path $Advertising) {
         Set-ItemProperty $Advertising Enabled -Value 0 
     }
             
     #Stops Cortana from being used as part of your Windows Search Function
-    Write-Output "Stopping Cortana from being used as part of your Windows Search Function"
+    Write-Host "Stopping Cortana from being used as part of your Windows Search Function"
     $Search = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
     If (Test-Path $Search) {
         Set-ItemProperty $Search AllowCortana -Value 0 
     }
 
     #Disables Web Search in Start Menu
-    Write-Output "Disabling Bing Search in Start Menu"
+    Write-Host "Disabling Bing Search in Start Menu"
     $WebSearch = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
     Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0 
 	If (!(Test-Path $WebSearch)) {
@@ -380,7 +380,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
 	Set-ItemProperty $WebSearch DisableWebSearch -Value 1 
             
     #Stops the Windows Feedback Experience from sending anonymous data
-    Write-Output "Stopping the Windows Feedback Experience program"
+    Write-Host "Stopping the Windows Feedback Experience program"
     $Period = "HKCU:\Software\Microsoft\Siuf\Rules"
     If (!(Test-Path $Period)) { 
         New-Item $Period
@@ -388,7 +388,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
     Set-ItemProperty $Period PeriodInNanoSeconds -Value 0 
 
     #Prevents bloatware applications from returning and removes Start Menu suggestions               
-    Write-Output "Adding Registry key to prevent bloatware apps from returning"
+    Write-Host "Adding Registry key to prevent bloatware apps from returning"
     $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
     $registryOEM = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
     If (!(Test-Path $registryPath)) { 
@@ -407,14 +407,14 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
         Set-ItemProperty $registryOEM  SystemPaneSuggestionsEnabled -Value 0          
     
     #Preping mixed Reality Portal for removal    
-    Write-Output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
+    Write-Host "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
     $Holo = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Holographic"    
     If (Test-Path $Holo) {
         Set-ItemProperty $Holo  FirstRunSucceeded -Value 0 
     }
 
     #Disables Wi-fi Sense
-    Write-Output "Disabling Wi-Fi Sense"
+    Write-Host "Disabling Wi-Fi Sense"
     $WifiSense1 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting"
     $WifiSense2 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots"
     $WifiSense3 = "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config"
@@ -429,7 +429,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
 	Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0 
         
     #Disables live tiles
-    Write-Output "Disabling live tiles"
+    Write-Host "Disabling live tiles"
     $Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"    
     If (!(Test-Path $Live)) {      
         New-Item $Live
@@ -437,7 +437,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
     Set-ItemProperty $Live  NoTileApplicationNotification -Value 1 
         
     #Turns off Data Collection via the AllowTelemtry key by changing it to 0
-    Write-Output "Turning off Data Collection"
+    Write-Host "Turning off Data Collection"
     $DataCollection1 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
     $DataCollection2 = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
     $DataCollection3 = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"    
@@ -452,7 +452,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
     }
     
     #Disabling Location Tracking
-    Write-Output "Disabling Location Tracking"
+    Write-Host "Disabling Location Tracking"
     $SensorState = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
     $LocationConfig = "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration"
     If (!(Test-Path $SensorState)) {
@@ -465,7 +465,7 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
     Set-ItemProperty $LocationConfig Status -Value 0 
         
     #Disables People icon on Taskbar
-    Write-Output "Disabling People icon on Taskbar"
+    Write-Host "Disabling People icon on Taskbar"
     $People = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"    
     If (!(Test-Path $People)) {
         New-Item $People
@@ -473,21 +473,19 @@ Set-Alias -Name LTI -Value Install-Automate -Description 'Install Automate Agent
     Set-ItemProperty $People  PeopleBand -Value 0 
         
     #Disables scheduled tasks that are considered unnecessary 
-    Write-Output "Disabling scheduled tasks"
-    Get-ScheduledTask  XblGameSaveTaskLogon | Disable-ScheduledTask
+    Write-Host "Disabling scheduled tasks"
     Get-ScheduledTask  XblGameSaveTask | Disable-ScheduledTask
     Get-ScheduledTask  Consolidator | Disable-ScheduledTask
     Get-ScheduledTask  UsbCeip | Disable-ScheduledTask
     Get-ScheduledTask  DmClient | Disable-ScheduledTask
     Get-ScheduledTask  DmClientOnScenarioDownload | Disable-ScheduledTask
     
-    Write-Output "Stopping and disabling WAP Push Service"
+    Write-Host "Stopping and disabling WAP Push Service"
     #Stop and disable WAP Push Service
 	Stop-Service "dmwappushservice"
 	Set-Service "dmwappushservice" -StartupType Disabled
 
-    Write-Output "Stopping and disabling Diagnostics Tracking Service"
+    Write-Host "Stopping and disabling Diagnostics Tracking Service"
     #Disabling the Diagnostics Tracking Service
 	Stop-Service "DiagTrack"
 	Set-Service "DiagTrack" -StartupType Disabled
-
