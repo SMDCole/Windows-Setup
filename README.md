@@ -1,6 +1,10 @@
 # Windows-Setup
 A setup script and resources for new systems coming through SystemsMD
 
-Run this in Powershell
+Run this in Powershell admin
+
+```iex ((New-Object System.Net.WebClient).DownloadString('https://git.io/JsGG3'))```
+
+Or
 
 ```iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/Auto-Install%20and%20configure%20SMD.ps1'))```
