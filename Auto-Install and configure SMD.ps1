@@ -52,18 +52,18 @@ $installchoco.location           = New-Object System.Drawing.Point(16,19)
 $installchoco.Font               = New-Object System.Drawing.Font('Microsoft Sans Serif',16)
 
 $automate                        = New-Object system.Windows.Forms.Button
-$automate.text                   = "Automate"
+$automate.text                   = "Automate (Not Working - WIP)"
 $automate.width                  = 150
 $automate.height                 = 30
 $automate.location               = New-Object System.Drawing.Point(250,19)
-$automate.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
+$automate.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',9)
 
 $SC                              = New-Object system.Windows.Forms.Button
-$SC.text                         = "ScreenConnect"
+$SC.text                         = "ScreenConnect (Not Working - WIP)"
 $SC.width                        = 150
 $SC.height                       = 30
 $SC.location                     = New-Object System.Drawing.Point(250,61)
-$SC.Font                         = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
+$SC.Font                         = New-Object System.Drawing.Font('Microsoft Sans Serif',8)
 
 $java                            = New-Object system.Windows.Forms.Button
 $java.text                       = "Java"
@@ -389,7 +389,7 @@ $Label22.location                = New-Object System.Drawing.Point(4,14)
 $Label22.Font                    = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
 $Label23                         = New-Object system.Windows.Forms.Label
-$Label23.text                    = "- Be sure to download Automate and ScreenConnect to the ROOT OF C BEFORE clicking their install buttons!"
+$Label23.text                    = "- TBU later"
 $Label23.AutoSize                = $true
 $Label23.width                   = 150
 $Label23.height                  = 10
@@ -425,13 +425,13 @@ $installchoco.Add_Click({
 
 $Automate.Add_Click({ 
 	Write-Host "Installing Automate"
-    msiexec.exe /I C:\Agent_Install
+    #msiexec.exe /I C:\Agent_Install
 	    $wshell.Popup("Operation Completed",0,"Done",0x0)	
 })
 
 $SC.Add_Click({ 
     Write-Host "Installing Screenconnect"
-    Invoke-Expression "& `"C:\Systems MD ScreenConnect.ClientSetup.exe`""
+    #Invoke-Expression "& `"C:\Systems MD ScreenConnect.ClientSetup.exe`""
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
