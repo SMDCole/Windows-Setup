@@ -480,6 +480,7 @@ $7zip.Add_Click({
 
 
 $essentialtweaks.Add_Click({ 
+    #Disable sleep timers and create a restore point just in case
     Write-Host "Disabling sleep and monitor timeout & setting timezone"
     Write-Host "Creating Restore Point incase something bad happens"
     Enable-ComputerRestore -Drive "C:\"
@@ -494,15 +495,154 @@ $essentialtweaks.Add_Click({
     powercfg.exe -change -hibernate-timeout-dc 0
     Set-TimeZone -Id "Mountain Standard Time"
 
+    #Enable Safe mode
     Write-Host "Enabling F8 to boot to Safe Mode"
     cmd /c "bcdedit /set (default) bootmenupolicy legacy"
 
+    #Use O&O Shutup to automate a lot
 	Write-Host "Running O&O Shutup with Recommended Settings"
     Import-Module BitsTransfer		choco install shutup10 -y
 	Start-BitsTransfer -Source "https://https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/ooshutup10.cfg" -Destination ooshutup10.cfg		OOSU10 ooshutup10.cfg /quiet
 	Start-BitsTransfer -Source "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -Destination OOSU10.exe	
 	./OOSU10.exe ooshutup10.cfg /quiet
+    
+    #Get Rid of nasty Windows stuff
+    #Disables Windows Feedback Experience
+    Write-Host "Disabling Windows Feedback Experience program"
+    $Advertising = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
+    If (Test-Path $Advertising) {
+        Set-ItemProperty $Advertising Enabled -Value 0 
+    }
+            
+    #Stops Cortana from being used as part of your Windows Search Function
+    Write-Host "Stopping Cortana from being used as part of your Windows Search Function"
+    $Search = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+    If (Test-Path $Search) {
+        Set-ItemProperty $Search AllowCortana -Value 0 
+    }
 
+    #Disables Web Search in Start Menu
+    Write-Host "Disabling Bing Search in Start Menu"
+    $WebSearch = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0 
+	If (!(Test-Path $WebSearch)) {
+        New-Item $WebSearch
+	}
+	Set-ItemProperty $WebSearch DisableWebSearch -Value 1 
+            
+    #Stops the Windows Feedback Experience from sending anonymous data
+    Write-Host "Stopping the Windows Feedback Experience program"
+    $Period = "HKCU:\Software\Microsoft\Siuf\Rules"
+    If (!(Test-Path $Period)) { 
+        New-Item $Period
+    }
+    Set-ItemProperty $Period PeriodInNanoSeconds -Value 0 
+
+    #Prevents bloatware applications from returning and removes Start Menu suggestions               
+    Write-Host "Adding Registry key to prevent bloatware apps from returning"
+    $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+    $registryOEM = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+    If (!(Test-Path $registryPath)) { 
+        New-Item $registryPath
+    }
+    Set-ItemProperty $registryPath DisableWindowsConsumerFeatures -Value 1 
+
+    If (!(Test-Path $registryOEM)) {
+        New-Item $registryOEM
+    }
+        Set-ItemProperty $registryOEM  ContentDeliveryAllowed -Value 0 
+        Set-ItemProperty $registryOEM  OemPreInstalledAppsEnabled -Value 0 
+        Set-ItemProperty $registryOEM  PreInstalledAppsEnabled -Value 0 
+        Set-ItemProperty $registryOEM  PreInstalledAppsEverEnabled -Value 0 
+        Set-ItemProperty $registryOEM  SilentInstalledAppsEnabled -Value 0 
+        Set-ItemProperty $registryOEM  SystemPaneSuggestionsEnabled -Value 0          
+    
+    #Preping mixed Reality Portal for removal    
+    Write-Host "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
+    $Holo = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Holographic"    
+    If (Test-Path $Holo) {
+        Set-ItemProperty $Holo  FirstRunSucceeded -Value 0 
+    }
+
+    #Disables Wi-fi Sense
+    Write-Host "Disabling Wi-Fi Sense"
+    $WifiSense1 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting"
+    $WifiSense2 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots"
+    $WifiSense3 = "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config"
+    If (!(Test-Path $WifiSense1)) {
+	    New-Item $WifiSense1
+    }
+    Set-ItemProperty $WifiSense1  Value -Value 0 
+	If (!(Test-Path $WifiSense2)) {
+	    New-Item $WifiSense2
+    }
+    Set-ItemProperty $WifiSense2  Value -Value 0 
+	Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0 
+        
+    #Disables live tiles
+    Write-Host "Disabling live tiles"
+    $Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"    
+    If (!(Test-Path $Live)) {      
+        New-Item $Live
+    }
+    Set-ItemProperty $Live  NoTileApplicationNotification -Value 1 
+        
+    #Turns off Data Collection via the AllowTelemtry key by changing it to 0
+    Write-Host "Turning off Data Collection"
+    $DataCollection1 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
+    $DataCollection2 = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
+    $DataCollection3 = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"    
+    If (Test-Path $DataCollection1) {
+        Set-ItemProperty $DataCollection1  AllowTelemetry -Value 0 
+    }
+    If (Test-Path $DataCollection2) {
+        Set-ItemProperty $DataCollection2  AllowTelemetry -Value 0 
+    }
+    If (Test-Path $DataCollection3) {
+        Set-ItemProperty $DataCollection3  AllowTelemetry -Value 0 
+    }
+    
+    #Disabling Location Tracking
+    Write-Host "Disabling Location Tracking"
+    $SensorState = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
+    $LocationConfig = "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration"
+    If (!(Test-Path $SensorState)) {
+        New-Item $SensorState
+    }
+    Set-ItemProperty $SensorState SensorPermissionState -Value 0 
+    If (!(Test-Path $LocationConfig)) {
+        New-Item $LocationConfig
+    }
+    Set-ItemProperty $LocationConfig Status -Value 0 
+        
+    #Disables People icon on Taskbar
+    Write-Host "Disabling People icon on Taskbar"
+    $People = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"    
+    If (!(Test-Path $People)) {
+        New-Item $People
+    }
+    Set-ItemProperty $People  PeopleBand -Value 0 
+        
+    #Disables scheduled tasks that are considered unnecessary 
+    Write-Host "Disabling scheduled tasks"
+    Get-ScheduledTask  XblGameSaveTask | Disable-ScheduledTask
+    Get-ScheduledTask  Consolidator | Disable-ScheduledTask
+    Get-ScheduledTask  UsbCeip | Disable-ScheduledTask
+    Get-ScheduledTask  DmClient | Disable-ScheduledTask
+    Get-ScheduledTask  DmClientOnScenarioDownload | Disable-ScheduledTask
+    
+    Write-Host "Stopping and disabling WAP Push Service"
+    #Stop and disable WAP Push Service
+	Stop-Service "dmwappushservice"
+	Set-Service "dmwappushservice" -StartupType Disabled
+
+    Write-Host "Stopping and disabling Diagnostics Tracking Service"
+    #Disabling the Diagnostics Tracking Service
+	Stop-Service "DiagTrack"
+	Set-Service "DiagTrack" -StartupType Disabled
+
+    #Kill it...kill it with fire
+    #Telemetry
     Write-Host "Disabling Telemetry..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
@@ -513,6 +653,7 @@ $essentialtweaks.Add_Click({
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
+    #App suggestions
     Write-Host "Disabling Application suggestions..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "OemPreInstalledAppsEnabled" -Type DWord -Value 0
@@ -566,7 +707,8 @@ $essentialtweaks.Add_Click({
 	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config")) {
 		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" | Out-Null
 	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" -Name "DODownloadMode" -Type DWord -Value 1
+	#A lot more nasty stuff
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" -Name "DODownloadMode" -Type DWord -Value 1
     Write-Host "Stopping and disabling Diagnostics Tracking Service..."
 	Stop-Service "DiagTrack" -WarningAction SilentlyContinue
 	Set-Service "DiagTrack" -StartupType Disabled
@@ -629,6 +771,56 @@ $essentialtweaks.Add_Click({
 		$wsh.SendKeys('{NUMLOCK}')
 	}
 
+    #Unpins all tiles from the Start Menu
+    Write-Host "Unpinning all tiles from the start menu"
+    (New-Object -Com Shell.Application).
+    NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+    Items() |
+    %{ $_.Verbs() } |
+    ?{$_.Name -match 'Un.*pin from Start'} |
+    %{$_.DoIt()}
+
+    #Set new PSDrive for Bloatware reinstall Registry keys
+    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+    $Keys = @(
+            
+        #Remove Background Tasks
+        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
+        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
+        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
+        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
+        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
+            
+        #Windows File
+        "HKCR:\Extensions\ContractId\Windows.File\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+            
+        #Registry keys to delete if they aren't uninstalled by RemoveAppXPackage/RemoveAppXProvisionedPackage
+        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
+        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
+        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
+        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
+            
+        #Scheduled Tasks to delete
+        "HKCR:\Extensions\ContractId\Windows.PreInstalledConfigTask\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
+            
+        #Windows Protocol Keys
+        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
+        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
+        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
+               
+        #Windows Share Target
+        "HKCR:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+    )
+        
+    #Removes the keys listed above.
+    Write-Host "Removing Bloatware Keys from registry"
+    ForEach ($Key in $Keys) {
+        Remove-Item $Key -Recurse
+    }
+
     Write-Host "Changing default Explorer view to This PC..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
     Write-Host "Hiding 3D Objects icon from This PC..."
@@ -640,6 +832,7 @@ $essentialtweaks.Add_Click({
 	# SVCHost Tweak
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "SvcHostSplitThresholdInKB" -Type DWord -Value 4194304
 
+#Finally debloat all the visible stuff
 $Bloatware = @(
 
         #Unnecessary Windows 10 AppX Apps
@@ -700,7 +893,8 @@ $Bloatware = @(
         "*Hulu*"
         "*HiddenCity*"
         "*AdobePhotoshopExpress*"
-                     
+        
+        #If you're going for the grand slam debloat (You should)             
         #Optional: Typically not removed but you can if you need to for some reason
         "*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
         "*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
@@ -717,6 +911,7 @@ $Bloatware = @(
         Write-Host "Trying to remove $Bloat."
     }
 
+    #Install Media Player because Why not
     Write-Host "Installing Windows Media Player..."
 	Enable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer" -NoRestart -WarningAction SilentlyContinue | Out-Null
 
@@ -778,6 +973,7 @@ $Paint3Dstuff = @(
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Disables some search like bing and indexing
 $windowssearch.Add_Click({ 
     Write-Host "Disabling Bing Search in Start Menu..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
@@ -794,6 +990,7 @@ $windowssearch.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Background apps go bye-bye
 $backgroundapps.Add_Click({ 
     Write-Host "Disabling Background application access..."
 	Get-ChildItem -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Exclude "Microsoft.Windows.Cortana*" | ForEach {
@@ -803,6 +1000,8 @@ $backgroundapps.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Cortana: Hi! I'm Cortana, and I'm here to help.
+#Me: NOT FOR LONG HEATHEN!
 $cortana.Add_Click({ 
     Write-Host "Disabling Cortana..."
 	If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Personalization\Settings")) {
@@ -825,6 +1024,7 @@ $cortana.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Diable UAC and disable other Windows 'Security'
 $securitylow.Add_Click({ 
     Write-Host "Lowering UAC level..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 0
@@ -855,6 +1055,7 @@ $securitylow.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Set all security up
 $securityhigh.Add_Click({ 
     Write-Host "Raising UAC level..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 5
@@ -883,6 +1084,7 @@ $securityhigh.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Normal Windows Update
 $defaultwindowsupdate.Add_Click({ 
     Write-Host "Enabling driver offering through Windows Update..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Device Metadata" -Name "PreventDeviceMetadataFromNetwork" -ErrorAction SilentlyContinue
@@ -896,6 +1098,7 @@ $defaultwindowsupdate.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#The necessary stuff from Windows Update
 $securitywindowsupdate.Add_Click({ 
     Write-Host "Disabling driver offering through Windows Update..."
 	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Device Metadata")) {
@@ -921,6 +1124,7 @@ $securitywindowsupdate.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Kills action center
 $actioncenter.Add_Click({ 
     Write-Host "Disabling Action Center..."
 	If (!(Test-Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer")) {
@@ -931,6 +1135,7 @@ $actioncenter.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#Optimize VFX
 $visualfx.Add_Click({ 
     Write-Host "Adjusting visual effects for performance..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "DragFullWindows" -Type String -Value 0
@@ -946,6 +1151,7 @@ $visualfx.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#uninstall OneDrive
 $onedrive.Add_Click({ 
     Write-Host "Disabling OneDrive..."
 	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {
@@ -975,12 +1181,14 @@ $onedrive.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#The good stuff
 $darkmode.Add_Click({ 
     Write-Host "Enabling Dark Mode"
 	Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
+#W H Y ?
 $lightmode.Add_Click({ 
     Write-Host "Switching Back to Light Mode"
 	Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme
