@@ -836,6 +836,7 @@ $essentialtweaks.Add_Click({
 $Bloatware = @(
 
         #Unnecessary Windows 10 AppX Apps
+        "Microsoft.549981C3F5F10"
         "Microsoft.3DBuilder"
         "Microsoft.AppConnector"
 	    "Microsoft.BingFinance"
@@ -848,6 +849,8 @@ $Bloatware = @(
         "Microsoft.Messaging"
         "Microsoft.Microsoft3DViewer"
         "Microsoft.MicrosoftSolitaireCollection"
+        "Microsoft.MixedReality.Portal"
+        "Microsoft.People"
         "Microsoft.NetworkSpeedTest"
         "Microsoft.News"
         "Microsoft.Office.Lens"
@@ -864,12 +867,20 @@ $Bloatware = @(
         "Microsoft.WindowsFeedbackHub"
         "Microsoft.WindowsMaps"
         "Microsoft.WindowsSoundRecorder"
+        "Microsoft.Xbox.TCUI"
+        "Microsoft.XboxApp"
+        "Microsoft.XboxGameOverlay"
+        "Microsoft.XboxGamingOverlay"
+        "Microsoft.XboxIdentityProvider"
+        "Microsoft.XboxSpeechToTextOverlay"
+        "Microsoft.YourPhone"
         "Microsoft.ZuneMusic"
         "Microsoft.ZuneVideo"
 
         #Sponsored Windows 10 AppX Apps
         #Add sponsored/featured apps to remove in the "*AppName*" format
         "*EclipseManager*"
+        "*Amazon*"
         "*ActiproSoftwareLLC*"
         "*AdobeSystemsIncorporated.AdobePhotoshopExpress*"
         "*Duolingo-LearnLanguagesforFree*"
@@ -905,11 +916,16 @@ $Bloatware = @(
         "*Microsoft.WindowsCalculator*"
         "*Microsoft.WindowsStore*"
     )
+    #Use list to remove AppX software
     foreach ($Bloat in $Bloatware) {
         Get-AppxPackage -Name $Bloat| Remove-AppxPackage
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
         Write-Host "Trying to remove $Bloat."
     }
+    #Catch AppX remnants and reactivate store for SystemsMD
+    Get-AppxPackage -AllUsers | Remove-AppxPackage
+    Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage –Online
+    Add-AppxPackage -user SystemsMD -register “C:\Program Files\WindowsApps\Microsoft.StorePurchaseApp_12103.1001.8.0_x64__8wekyb3d8bbwe\appxmanifest.xml” -DisableDevelopmentMode
 
     #Install Media Player because Why not
     Write-Host "Installing Windows Media Player..."
@@ -1188,7 +1204,7 @@ $darkmode.Add_Click({
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
-#W H Y ?
+# W H Y ?
 $lightmode.Add_Click({ 
     Write-Host "Switching Back to Light Mode"
 	Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme
