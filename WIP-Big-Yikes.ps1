@@ -123,6 +123,7 @@
     $SoftwareFullPath = "$SoftwarePath\$Filename"
     $AutomateURL = "https://$($Server)"
     
+    #Checking OS Version
     Write-Verbose "Checking Operating System (WinXP and Older)"
     If ([int]((Get-WmiObject Win32_OperatingSystem).BuildNumber) -lt 6000) {
         $OS = ((Get-WmiObject Win32_OperatingSystem).Caption)
@@ -132,6 +133,7 @@
         $AutomateURL = "https://$($Server)"
     }
     
+    #Enbales SSL/TLS Downloads
     Try {
         Write-Verbose "Enabling downloads to use SSL/TLS v1.2"
         [Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072)
@@ -144,6 +146,7 @@
         $AutomateURL = "https://$($Server)"
     }
     
+    #Tests URL Download of agent
     Try {
         $AutomateURLTest = "$($AutomateURL)/LabTech/"
         $TestURL = (New-Object Net.WebClient).DownloadString($AutomateURLTest)
@@ -154,6 +157,7 @@
         $AutomateURL = "http://$($Server)"
     }
     
+    #Tries token download if URL Fails
     $DownloadPath = $null
     If ($Token -ne $null) {
         $DownloadPath = "$($AutomateURL)/Labtech/Deployment.aspx?InstallerToken=$Token"
@@ -164,7 +168,8 @@
         $DownloadPath = "$($AutomateURL)/Labtech/Deployment.aspx?Probe=1&installType=msi&MSILocations=$($LocationID)"
         Write-Verbose "Downloading from (Old): $($DownloadPath)"
     }   
-        
+    
+    #Checks for Automate already being installed    
     Confirm-Automate -Silent -Verbose:$Verbose
     Write-Verbose "If ServerAddress matches, the Automate Agent is currently Online, and Not forced to Rip & Replace then Automate is already installed."
     Write-Verbose (($Global:Automate.ServerAddress -like "*$($Server)*") -and ($Global:Automate.Online) -and !($Force))
@@ -201,6 +206,7 @@
                 Break                
             }
             
+            #If forced, Automate will uninstall and reinstall
             Write-Verbose "Removing Existing Automate Agent"
             Uninstall-Automate -Force:$Force -Silent:$Silent -Verbose:$Verbose
             If (!$Silent) {Write-Host "Installing Automate Agent to $AutomateURL"}
