@@ -1,16 +1,16 @@
 ﻿$CSV = Import-Csv C:\Users\cole\Documents\Clients.csv
 
 [array]$DropDownArray = $CSV.Client
-[array]$DropDownRef   = $CSV.'Location ID'
+[array]$DropDownRef = $CSV.'LocationID'
 
 # This Function Returns the Selected Value and Closes the Form
 
 function Return-DropDown {
- $script:Choice = $DropDown.SelectedItem#.ToString()
+ $script:Choice = $DropDown.SelectedItem.ToString()
  $Form.Close()
 }
 
-function selectShare{
+function selectClient{
     [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
     [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 
@@ -51,5 +51,5 @@ function selectShare{
     return $script:choice
 }
 
-$share = selectShare
-write-host $share
+$client = selectClient
+write-host $client

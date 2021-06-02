@@ -927,10 +927,9 @@ $Bloatware = @(
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
         Write-Host "Trying to remove $Bloat."
     }
-    #Catch AppX remnants and reactivate store for SystemsMD
+    #Catch AppX remnants
     Get-AppxPackage -AllUsers | Remove-AppxPackage
     Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage –Online
-    Add-AppxPackage -user SystemsMD -register “C:\Program Files\WindowsApps\Microsoft.StorePurchaseApp_12103.1001.8.0_x64__8wekyb3d8bbwe\appxmanifest.xml” -DisableDevelopmentMode
 
     #Install Media Player because Why not
     Write-Host "Installing Windows Media Player..."
@@ -1206,6 +1205,7 @@ $onedrive.Add_Click({
 $darkmode.Add_Click({ 
     Write-Host "Enabling Dark Mode"
 	Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name SystemUsesLightTheme -Value 0 -Type Dword -Force
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
@@ -1213,6 +1213,7 @@ $darkmode.Add_Click({
 $lightmode.Add_Click({ 
     Write-Host "Switching Back to Light Mode"
 	Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name SystemUsesLightTheme -Value 1 -Type Dword -Force
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
