@@ -58,12 +58,12 @@ $automate.height                 = 30
 $automate.location               = New-Object System.Drawing.Point(250,19)
 $automate.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',9)
 
-$SC                              = New-Object system.Windows.Forms.Button
-$SC.text                         = "ScreenConnect (Not Working - WIP)"
-$SC.width                        = 150
-$SC.height                       = 30
-$SC.location                     = New-Object System.Drawing.Point(250,61)
-$SC.Font                         = New-Object System.Drawing.Font('Microsoft Sans Serif',8)
+$OOAPB                           = New-Object system.Windows.Forms.Button
+$OOAPB.text                      = "OO App Buster"
+$OOAPB.width                     = 150
+$OOAPB.height                    = 30
+$OOAPB.location                  = New-Object System.Drawing.Point(250,61)
+$OOAPB.Font                      = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
 
 $java                            = New-Object system.Windows.Forms.Button
 $java.text                       = "Java"
@@ -333,7 +333,7 @@ $securitywindowsupdate.location  = New-Object System.Drawing.Point(20,119)
 $securitywindowsupdate.Font      = New-Object System.Drawing.Font('Microsoft Sans Serif',14)
 
 $Label16                         = New-Object system.Windows.Forms.Label
-$Label16.text                    = "I recommend doing security updates only."
+$Label16.text                    = "Security updates only is reccomended."
 $Label16.AutoSize                = $true
 $Label16.width                   = 25
 $Label16.height                  = 10
@@ -410,7 +410,7 @@ $lightmode.location              = New-Object System.Drawing.Point(417,45)
 $lightmode.Font                  = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
 
 $Form.controls.AddRange(@($Panel1,$Label1,$Panel2,$Label3,$Panel3,$Label4,$Label15,$Panel4,$Label20,$Label21,$Label23,$PictureBox1))
-$Panel1.controls.AddRange(@($installchoco,$automate,$SC,$java,$firefox,$gchrome,$adobereader,$vlc,$notepad,$7zip,$Label2))
+$Panel1.controls.AddRange(@($installchoco,$automate,$OOAPB,$java,$firefox,$gchrome,$adobereader,$vlc,$notepad,$7zip,$Label2))
 $Panel2.controls.AddRange(@($essentialtweaks,$backgroundapps,$cortana,$windowssearch,$actioncenter,$darkmode,$visualfx,$onedrive,$Label22,$lightmode))
 $Panel3.controls.AddRange(@($securitylow,$securityhigh,$Label5,$Label6,$Label7,$Label8,$Label9,$Label10,$Label11,$Label12,$Label13))
 $Panel4.controls.AddRange(@($defaultwindowsupdate,$securitywindowsupdate,$Label16,$Label17,$Label18,$Label19))
@@ -426,12 +426,17 @@ $installchoco.Add_Click({
 $Automate.Add_Click({ 
 	Write-Host "Installing Automate"
     #msiexec.exe /I C:\Agent_Install
-	    $wshell.Popup("Operation Completed",0,"Done",0x0)	
+    
+    $wshell.Popup("Operation Completed",0,"Done",0x0)	
 })
 
-$SC.Add_Click({ 
-    Write-Host "Installing Screenconnect"
-    #Invoke-Expression "& `"C:\Systems MD ScreenConnect.ClientSetup.exe`""
+#BEGONE THOT!
+$OOAPB.Add_Click({ 
+    Write-Host "Running O&O App Buster"
+    $ProcName = "OOAPB.exe"
+    $Webfile = "https://dl5.oo-software.com/files/ooappbuster/OOAPB.exe"
+    (New-Object System.Net.WebClient).DownloadFile($WebFile, "$env:APPDATA\$ProcName")
+    Start-Process ("$env:APPDATA\$ProcName")
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
@@ -922,10 +927,9 @@ $Bloatware = @(
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
         Write-Host "Trying to remove $Bloat."
     }
-    #Catch AppX remnants and reactivate store for SystemsMD
+    #Catch AppX remnants
     Get-AppxPackage -AllUsers | Remove-AppxPackage
     Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage –Online
-    Add-AppxPackage -user SystemsMD -register “C:\Program Files\WindowsApps\Microsoft.StorePurchaseApp_12103.1001.8.0_x64__8wekyb3d8bbwe\appxmanifest.xml” -DisableDevelopmentMode
 
     #Install Media Player because Why not
     Write-Host "Installing Windows Media Player..."
@@ -1201,6 +1205,7 @@ $onedrive.Add_Click({
 $darkmode.Add_Click({ 
     Write-Host "Enabling Dark Mode"
 	Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme -Value 0
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name SystemUsesLightTheme -Value 0 -Type Dword -Force
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
@@ -1208,6 +1213,7 @@ $darkmode.Add_Click({
 $lightmode.Add_Click({ 
     Write-Host "Switching Back to Light Mode"
 	Remove-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name AppsUseLightTheme
+    Set-ItemProperty -Path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize -Name SystemUsesLightTheme -Value 1 -Type Dword -Force
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 

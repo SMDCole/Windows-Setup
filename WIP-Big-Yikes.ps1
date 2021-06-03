@@ -92,6 +92,8 @@
     Install-Automate -Server 'automate.domain.com' -LocationID 42 -Token adb68881994ed93960346478303476f4
     This will install the LabTech agent using the provided Server URL, and LocationID.
 #>
+
+
 [CmdletBinding(SupportsShouldProcess=$True)]
     Param(
         [Parameter(ValueFromPipelineByPropertyName = $True, Position=0)]
@@ -100,7 +102,7 @@
         [Parameter(ValueFromPipelineByPropertyName = $True, Position=1)]
         [AllowNull()]
         [Alias('LID','Location')]
-        [int]$LocationID = '1',
+        [int]$LocationID,
         [Parameter(ValueFromPipelineByPropertyName = $True, Position=2)]
         [Alias("InstallerToken")]
         [string[]]$Token = $Null,
@@ -113,6 +115,67 @@
         [AllowNull()]
         [switch]$Transcript = $False
     )
+    
+
+    ############################################
+    #Use a csv to select a location that corresponds
+    #To a location ID to pass into $LocationID
+    #To install automate
+    $CSV = Import-Csv C:\Users\cole\Documents\Clients.csv
+
+    [array]$DropDownArray = $CSV.Client
+
+    # This Function Returns the Selected Value and Closes the Form
+
+    function Return-DropDown {
+        $script:Choice = $DropDown.SelectedItem.ToString()
+        $Form.Close()
+    }
+
+    function selectShare{
+        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+
+
+        $Form = New-Object System.Windows.Forms.Form
+
+        $Form.width = 300
+        $Form.height = 150
+        $Form.Text = ”Select Client”
+
+        $DropDown = new-object System.Windows.Forms.ComboBox
+        $DropDown.Location = new-object System.Drawing.Size(100,10)
+        $DropDown.Size = new-object System.Drawing.Size(170,30)
+
+        ForEach ($Item in $DropDownArray) {
+         [void] $DropDown.Items.Add($Item)
+        }
+
+        $Form.Controls.Add($DropDown)
+
+        $DropDownLabel = new-object System.Windows.Forms.Label
+        $DropDownLabel.Location = new-object System.Drawing.Size(10,10) 
+        $DropDownLabel.size = new-object System.Drawing.Size(100,40) 
+        $DropDownLabel.Text = "Select a client"
+        $Form.Controls.Add($DropDownLabel)
+
+        $Button = new-object System.Windows.Forms.Button
+        $Button.Location = new-object System.Drawing.Size(100,50)
+        $Button.Size = new-object System.Drawing.Size(100,20)
+        $Button.Text = "Select"
+        $Button.Add_Click({Return-DropDown})
+        $form.Controls.Add($Button)
+
+        $Form.Add_Shown({$Form.Activate()})
+        [void] $Form.ShowDialog()
+
+
+        return $script:choice
+    }
+    $LocationID = selectShare
+
+    ############################################
+
     $ErrorActionPreference = 'SilentlyContinue'
     $Verbose = If ($PSBoundParameters.Verbose -eq $True) { $True } Else { $False }
     $Error.Clear()
