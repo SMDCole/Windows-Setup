@@ -67,9 +67,12 @@ powercfg.exe -change -standby-timeout-ac 0
 powercfg.exe -change -standby-timeout-dc 0
 powercfg.exe -change -hibernate-timeout-ac 0
 powercfg.exe -change -hibernate-timeout-dc 0
+Write-Host "Changing time zone to Mountain"
 Set-TimeZone -Id "Mountain Standard Time"
+Write-Host "Enabling .NET Framework"
+Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 
-#Essential Tweaks from Cole
+##########Essential Tweaks from Cole##########
 
 #install Chocolatey and other programs
     Write-Host "Installing Chocolatey"
@@ -110,8 +113,9 @@ Set-TimeZone -Id "Mountain Standard Time"
 
 #Use O&O Shutup to automate a lot
 	Write-Host "Running O&O Shutup with Recommended Settings"
-    Import-Module BitsTransfer		choco install shutup10 -y
-	Start-BitsTransfer -Source "https://https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/ooshutup10.cfg" -Destination ooshutup10.cfg		OOSU10 ooshutup10.cfg /quiet
+    Import-Module BitsTransfer 
+    choco install shutup10 -y
+	Start-BitsTransfer -Source "https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/ooshutup10.cfg" -Destination ooshutup10.cfg
 	Start-BitsTransfer -Source "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -Destination OOSU10.exe	
 	./OOSU10.exe ooshutup10.cfg /quiet
 
@@ -148,7 +152,7 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
     Write-Host "Stopping the Windows Feedback Experience program"
     $Period = "HKCU:\Software\Microsoft\Siuf\Rules"
     If (!(Test-Path $Period)) { 
-        New-Item $Period
+    New-Item $Period
     }
     Set-ItemProperty $Period PeriodInNanoSeconds -Value 0 
 
@@ -267,6 +271,7 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
+    
     #App suggestions
     Write-Host "Disabling Application suggestions..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type DWord -Value 0
@@ -331,11 +336,6 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
 	Set-Service "dmwappushservice" -StartupType Disabled
     Write-Host "Enabling F8 boot menu options..."
 	bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
-    Write-Host "Stopping and disabling Home Groups services..."
-	Stop-Service "HomeGroupListener" -WarningAction SilentlyContinue
-	Set-Service "HomeGroupListener" -StartupType Disabled
-	Stop-Service "HomeGroupProvider" -WarningAction SilentlyContinue
-	Set-Service "HomeGroupProvider" -StartupType Disabled
     Write-Host "Disabling Remote Assistance..."
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type DWord -Value 0
     Write-Host "Disabling Storage Sense..."
@@ -392,51 +392,11 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
     Items() |
     %{ $_.Verbs() } |
     ?{$_.Name -match 'Un.*pin from Start'} |
-    %{$_.DoIt()}
 
-    #Set new PSDrive for Bloatware reinstall Registry keys
-    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-    $Keys = @(
-            
-        #Remove Background Tasks
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
-            
-        #Windows File
-        "HKCR:\Extensions\ContractId\Windows.File\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-            
-        #Registry keys to delete if they aren't uninstalled by RemoveAppXPackage/RemoveAppXProvisionedPackage
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
-            
-        #Scheduled Tasks to delete
-        "HKCR:\Extensions\ContractId\Windows.PreInstalledConfigTask\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
-            
-        #Windows Protocol Keys
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
-               
-        #Windows Share Target
-        "HKCR:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-    )
-        
-    #Removes the keys listed above.
-    Write-Host "Removing Bloatware Keys from registry"
-    ForEach ($Key in $Keys) {
-        Remove-Item $Key -Recurse
-    }
-
-    Write-Host "Changing default Explorer view to This PC..."
+    #Y this work but throw error?
+    Write-Host "Changing default Explorer view to This PC"
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
+    
     Write-Host "Hiding 3D Objects icon from This PC..."
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" -Recurse -ErrorAction SilentlyContinue
 
@@ -477,7 +437,7 @@ $Bloatware = @(
         "Microsoft.Wallet"
         "Microsoft.Whiteboard"
         "Microsoft.WindowsAlarms"
-        "microsoft.windowscommunicationsapps"
+        "Microsoft.windowscommunicationsapps"
         "Microsoft.WindowsFeedbackHub"
         "Microsoft.WindowsMaps"
         "Microsoft.WindowsSoundRecorder"
@@ -532,17 +492,15 @@ $Bloatware = @(
     )
     #Use list to remove AppX software
     foreach ($Bloat in $Bloatware) {
-        Get-AppxPackage -Name $Bloat| Remove-AppxPackage
+        Get-AppxPackage -AllUsers -Name $Bloat| Remove-AppxPackage
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
         Write-Host "Trying to remove $Bloat."
     }
-    #Catch AppX remnants
-    Get-AppxPackage -AllUsers | Remove-AppxPackage
-    Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage –Online
 
     #Install Media Player because Why not
     Write-Host "Installing Windows Media Player..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer" -NoRestart -WarningAction SilentlyContinue | Out-Null
+    #Works outside Windows Sandbox.
+	Enable-WindowsOptionalFeature -FeatureName "WindowsMediaPlayer" -All -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 
     #Stops edge from taking over as the default .PDF viewer    
     Write-Host "Stopping Edge from taking over as the default .PDF viewer"
@@ -590,6 +548,7 @@ $Paint3Dstuff = @(
 	"HKCR:\SystemFileAssociations\.tif\Shell\3D Edit"
 	"HKCR:\SystemFileAssociations\.tiff\Shell\3D Edit"
     )
+    
     #Rename reg key to remove it, so it's revertible
     foreach ($Paint3D in $Paint3Dstuff) {
         If (Test-Path $Paint3D) {
@@ -652,8 +611,8 @@ $Paint3Dstuff = @(
 #	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet")) {
 #		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Force | Out-Null
 #	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -Type DWord -Value 0
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2
+#	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -Type DWord -Value 0
+#	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2
     Write-Host "Disabling Meltdown (CVE-2017-5754) compatibility flag..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat" -Name "cadca5fe-87d3-4b96-b7fb-a231484277cc" -ErrorAction SilentlyContinue
 #   Write-Host "Disabling Malicious Software Removal Tool offering..."
