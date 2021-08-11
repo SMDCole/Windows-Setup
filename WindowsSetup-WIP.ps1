@@ -67,7 +67,10 @@ powercfg.exe -change -standby-timeout-ac 0
 powercfg.exe -change -standby-timeout-dc 0
 powercfg.exe -change -hibernate-timeout-ac 0
 powercfg.exe -change -hibernate-timeout-dc 0
+Write-Host "Changing time zone to Mountain"
 Set-TimeZone -Id "Mountain Standard Time"
+Write-Host "Enabling .NET Framework"
+Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 
 ##########Essential Tweaks from Cole##########
 
@@ -268,6 +271,7 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
+    
     #App suggestions
     Write-Host "Disabling Application suggestions..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type DWord -Value 0
@@ -332,13 +336,6 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
 	Set-Service "dmwappushservice" -StartupType Disabled
     Write-Host "Enabling F8 boot menu options..."
 	bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
-    #Something funky happens here...not sure what
-    #Something about HomeGroupListener and HomeGroupProvider not existing?
-    #Write-Host "Stopping and disabling Home Groups services..."
-	#Stop-Service "HomeGroupListener" -WarningAction SilentlyContinue
-	#Set-Service "HomeGroupListener" -StartupType Disabled
-	#Stop-Service "HomeGroupProvider" -WarningAction SilentlyContinue
-	#Set-Service "HomeGroupProvider" -StartupType Disabled
     Write-Host "Disabling Remote Assistance..."
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type DWord -Value 0
     Write-Host "Disabling Storage Sense..."
@@ -396,49 +393,10 @@ Get-NetAdapter | where {$_.Name -like "*ethernet*" -or $_.Name -like '*wireless*
     %{ $_.Verbs() } |
     ?{$_.Name -match 'Un.*pin from Start'} |
 
-    Set new PSDrive for Bloatware reinstall Registry keys
-    New-PSDrive -PSProvider registry -Root HKEY_CLASSES_ROOT -Name HKCR
-    $Keys = @(
-            
-        #Remove Background Tasks
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
-            
-        #Windows File
-        "HKCR:\Extensions\ContractId\Windows.File\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-            
-        #Registry keys to delete if they aren't uninstalled by RemoveAppXPackage/RemoveAppXProvisionedPackage
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
-            
-        #Scheduled Tasks to delete
-        "HKCR:\Extensions\ContractId\Windows.PreInstalledConfigTask\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
-            
-        #Windows Protocol Keys
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
-               
-        #Windows Share Target
-        "HKCR:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-    )
-        
-    #Removes the keys listed above.
-    Write-Host "Removing Bloatware Keys from registry"
-    ForEach ($Key in $Keys) {
-        Remove-Item $Key -Recurse
-    }
-
-    Write-Host "Changing default Explorer view to This PC..."
+    #Y this work but throw error?
+    Write-Host "Changing default Explorer view to This PC"
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
+    
     Write-Host "Hiding 3D Objects icon from This PC..."
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" -Recurse -ErrorAction SilentlyContinue
 
@@ -534,14 +492,10 @@ $Bloatware = @(
     )
     #Use list to remove AppX software
     foreach ($Bloat in $Bloatware) {
-        Get-AppxPackage -Name $Bloat| Remove-AppxPackage
+        Get-AppxPackage -AllUsers -Name $Bloat| Remove-AppxPackage
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
         Write-Host "Trying to remove $Bloat."
     }
-    #Catch AppX remnants
-    #Throws Errors
-    #Get-AppxPackage -AllUsers | Remove-AppxPackage
-    Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage –Online
 
     #Install Media Player because Why not
     Write-Host "Installing Windows Media Player..."
@@ -594,6 +548,7 @@ $Paint3Dstuff = @(
 	"HKCR:\SystemFileAssociations\.tif\Shell\3D Edit"
 	"HKCR:\SystemFileAssociations\.tiff\Shell\3D Edit"
     )
+    
     #Rename reg key to remove it, so it's revertible
     foreach ($Paint3D in $Paint3Dstuff) {
         If (Test-Path $Paint3D) {

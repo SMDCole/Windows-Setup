@@ -2,6 +2,7 @@
 
 [array]$DropDownArray = $CSV.Client
 [array]$DropDownRef = $CSV.'LocationID'
+Write-Host "$DropDownRef"
 
 # This Function Returns the Selected Value and Closes the Form
 
@@ -13,7 +14,7 @@ function Return-DropDown {
 function selectClient{
     [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
     [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
-
+    Write-Host "$DropDownRef
 
     $Form = New-Object System.Windows.Forms.Form
 

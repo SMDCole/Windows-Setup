@@ -199,12 +199,12 @@ $visualfx.height                 = 30
 $visualfx.location               = New-Object System.Drawing.Point(417,82)
 $visualfx.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
 
-$onedrive                        = New-Object system.Windows.Forms.Button
-$onedrive.text                   = "OneDrive"
-$onedrive.width                  = 150
-$onedrive.height                 = 30
-$onedrive.location               = New-Object System.Drawing.Point(251,119)
-$onedrive.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
+#$onedrive                        = New-Object system.Windows.Forms.Button
+#$onedrive.text                   = "OneDrive"
+#$onedrive.width                  = 150
+#$onedrive.height                 = 30
+#$onedrive.location               = New-Object System.Drawing.Point(251,119)
+#$onedrive.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',12)
 
 $Panel3                          = New-Object system.Windows.Forms.Panel
 $Panel3.height                   = 158
@@ -238,31 +238,31 @@ $Label5.text                     = "- Set UAC to Never Prompt"
 $Label5.AutoSize                 = $true
 $Label5.width                    = 150
 $Label5.height                   = 10
-$Label5.location                 = New-Object System.Drawing.Point(24,40)
+$Label5.location                 = New-Object System.Drawing.Point(24,6)
 $Label5.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
-$Label6                          = New-Object system.Windows.Forms.Label
-$Label6.text                     = "- Disable Windows Defender"
-$Label6.AutoSize                 = $true
-$Label6.width                    = 150
-$Label6.height                   = 10
-$Label6.location                 = New-Object System.Drawing.Point(24,6)
-$Label6.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+#$Label6                          = New-Object system.Windows.Forms.Label
+#$Label6.text                     = "- Disable Windows Defender"
+#$Label6.AutoSize                 = $true
+#$Label6.width                    = 150
+#$Label6.height                   = 10
+#$Label6.location                 = New-Object System.Drawing.Point(24,6)
+#$Label6.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
-$Label7                          = New-Object system.Windows.Forms.Label
-$Label7.text                     = "- Disable Defender Updates"
-$Label7.AutoSize                 = $true
-$Label7.width                    = 150
-$Label7.height                   = 10
-$Label7.location                 = New-Object System.Drawing.Point(24,23)
-$Label7.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+#$Label7                          = New-Object system.Windows.Forms.Label
+#$Label7.text                     = "- Disable Defender Updates"
+#$Label7.AutoSize                 = $true
+#$Label7.width                    = 150
+#$Label7.height                   = 10
+#$Label7.location                 = New-Object System.Drawing.Point(24,23)
+#$Label7.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
 $Label8                          = New-Object system.Windows.Forms.Label
 $Label8.text                     = "- Disable Windows Malware Scan"
 $Label8.AutoSize                 = $true
 $Label8.width                    = 150
 $Label8.height                   = 10
-$Label8.location                 = New-Object System.Drawing.Point(24,75)
+$Label8.location                 = New-Object System.Drawing.Point(24,40)
 $Label8.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
 $Label9                          = New-Object system.Windows.Forms.Label
@@ -270,7 +270,7 @@ $Label9.text                     = "- Disable Meltdown Flag"
 $Label9.AutoSize                 = $true
 $Label9.width                    = 150
 $Label9.height                   = 10
-$Label9.location                 = New-Object System.Drawing.Point(24,58)
+$Label9.location                 = New-Object System.Drawing.Point(24,23)
 $Label9.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
 $Label10                         = New-Object system.Windows.Forms.Label
@@ -411,8 +411,8 @@ $lightmode.Font                  = New-Object System.Drawing.Font('Microsoft San
 
 $Form.controls.AddRange(@($Panel1,$Label1,$Panel2,$Label3,$Panel3,$Label4,$Label15,$Panel4,$Label20,$Label21,$Label23,$PictureBox1))
 $Panel1.controls.AddRange(@($installchoco,$automate,$OOAPB,$java,$firefox,$gchrome,$adobereader,$vlc,$notepad,$7zip,$Label2))
-$Panel2.controls.AddRange(@($essentialtweaks,$backgroundapps,$cortana,$windowssearch,$actioncenter,$darkmode,$visualfx,$onedrive,$Label22,$lightmode))
-$Panel3.controls.AddRange(@($securitylow,$securityhigh,$Label5,$Label6,$Label7,$Label8,$Label9,$Label10,$Label11,$Label12,$Label13))
+$Panel2.controls.AddRange(@($essentialtweaks,$backgroundapps,$cortana,$windowssearch,$actioncenter,$darkmode,$visualfx,$Label22,$lightmode))
+$Panel3.controls.AddRange(@($securitylow,$securityhigh,$Label5,$Label8,$Label9,$Label10,$Label11,$Label12,$Label13))
 $Panel4.controls.AddRange(@($defaultwindowsupdate,$securitywindowsupdate,$Label16,$Label17,$Label18,$Label19))
 
 
@@ -485,6 +485,179 @@ $7zip.Add_Click({
 
 
 $essentialtweaks.Add_Click({ 
+
+#Real good stuff courtesy of Mike Bartlett
+#initiates the variables required for the script 
+$diskProps = (Get-PhysicalDisk | where size -gt 100gb)
+$cortanaPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+$HighPerf = powercfg -l | %{if($_.contains("High performance")) {$_.split()[3]}}
+$confirmUac = 'n'
+$confirmInfo = 'n'
+$confirmPower = 'n'
+$confirmDev = 'n'
+$avCheck = $false
+$installCheck = 'n'
+$officeCheck = $false
+
+#Obtains required information, and prompts user to confirm
+while ($confirmInfo -ne 'y') {
+
+##############################################################################################################
+##############################################################################################################
+##############################################################################################################
+
+# This Function Returns the Selected Value and Closes the Form
+
+function Return-CompName {
+ $script:Choice = $CompName.Text.ToString()
+ $Form.Close()
+}
+
+function selectCompName{
+    [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+    [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+
+
+    $Form = New-Object System.Windows.Forms.Form
+
+    $Form.width = 300
+    $Form.height = 150
+    $Form.Text = ”Computer Name”
+
+    $CompName = new-object System.Windows.Forms.TextBox
+    $CompName.Location = new-object System.Drawing.Size(100,10)
+    $CompName.Size = new-object System.Drawing.Size(170,30)
+
+    $Form.Controls.Add($CompName)
+
+    $CompNameLabel = new-object System.Windows.Forms.Label
+    $CompNameLabel.Location = new-object System.Drawing.Size(10,10) 
+    $CompNameLabel.size = new-object System.Drawing.Size(100,40) 
+    $CompNameLabel.Text = "Enter a computer name"
+    $Form.Controls.Add($CompNameLabel)
+
+    $Button = new-object System.Windows.Forms.Button
+    $Button.Location = new-object System.Drawing.Size(100,50)
+    $Button.Size = new-object System.Drawing.Size(100,20)
+    $Button.Text = "Select"
+    $Button.Add_Click({Return-CompName})
+    $form.Controls.Add($Button)
+
+    $Form.Add_Shown({$Form.Activate()})
+    [void] $Form.ShowDialog()
+
+
+    return $script:choice
+}
+
+$Computername = selectCompName
+write-host $Computername
+
+##############################################################################################################
+
+function Return-AdminName {
+ $script:Choice = $AdminName.Text.ToString()
+ $Form.Close()
+}
+
+function selectAdminName{
+    [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+    [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+
+
+    $Form = New-Object System.Windows.Forms.Form
+
+    $Form.width = 300
+    $Form.height = 150
+    $Form.Text = ”Admin Name”
+
+    $AdminName = new-object System.Windows.Forms.TextBox
+    $AdminName.Location = new-object System.Drawing.Size(100,10)
+    $AdminName.Size = new-object System.Drawing.Size(170,30)
+
+    $Form.Controls.Add($AdminName)
+
+    $AdminNameLabel = new-object System.Windows.Forms.Label
+    $AdminNameLabel.Location = new-object System.Drawing.Size(10,10) 
+    $AdminNameLabel.size = new-object System.Drawing.Size(100,40) 
+    $AdminNameLabel.Text = "Enter an administrator username"
+    $Form.Controls.Add($AdminNameLabel)
+
+    $Button = new-object System.Windows.Forms.Button
+    $Button.Location = new-object System.Drawing.Size(100,50)
+    $Button.Size = new-object System.Drawing.Size(100,20)
+    $Button.Text = "Select"
+    $Button.Add_Click({Return-AdminName})
+    $form.Controls.Add($Button)
+
+    $Form.Add_Shown({$Form.Activate()})
+    [void] $Form.ShowDialog()
+
+
+    return $script:choice
+}
+
+$AdminName = selectAdminName
+write-host $AdminName
+
+##############################################################################################################
+##############################################################################################################
+##############################################################################################################
+
+Write-Output "`n`nComputer Name: $ComputerName `nAdmin username: $AdminName`n"
+$confirmInfo = (Read-Host "Is this information correct? Y/N")
+
+Write-Output "`n`nComputer Name: $compName `nAdmin username: $userName`n"
+$confirmInfo = (Read-Host "Is this information correct? Y/N")
+}
+
+#Asks user to set admin password, confirms it by comparing two passwords
+# Credit to 'RowdyVinson' on stackoverflow
+# https://stackoverflow.com/questions/38901752/verify-passwords-match-in-windows-powershell
+do {
+Write-Host "`nEnter Admin password"
+    $pwd1 = Read-Host "Password" -AsSecureString
+    $pwd2 = Read-Host "Confirm Password" -AsSecureString
+    $pwd1_text = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pwd1))
+    $pwd2_text = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pwd2))
+    
+    if ($pwd1_text -ne $pwd2_text) {
+    Write-Warning "`nPasswords do not match. Please try again."
+    }
+}
+while ($pwd1_text -ne $pwd2_text)
+Write-Host "`n`nPasswords matched"
+$userPass = $pwd1
+$pwd1_text = 'a'
+$pwd2_text = 'a'
+
+
+#Sets appropriate time zone (Done later, line 571), computer name.
+#Enables system restore on C:\
+Write-Output "`n`nSetting time zone, computer name, and enabling system restore..."
+Rename-Computer -NewName $compName
+Enable-ComputerRestore -Drive "$env:SystemDrive"
+
+#Check if disk is SSD or HDD, set restore point usage accordingly
+#Also configures SSD overprovisioning if media is SSD
+if ($diskProps.MediaType -eq 'SSD') {
+    $diskShrink = ($diskProps.Size/1gb)*(.1)
+    $diskShrink = ([Math]::Round($diskShrink))
+    $partInfo = (Get-Partition | where size -gt 100gb)
+    $partSize = ([Math]::Round($partInfo.Size/1gb))
+    $partNewSize = ($partSize)-($diskShrink)
+
+    Write-Output "`n`nDisk type is SSD. Configuring system restore and overprovisioning..."
+
+    vssadmin resize shadowstorage /for=C: /on=C: /maxsize=5%
+
+    Resize-Partition -DiskNumber $partInfo.DiskNumber -PartitionNumber $partInfo.PartitionNumber -Size ($partNewSize * 1gb)
+} else {
+    Write-Output "`n`nDisk type is HDD. Configuring system restore..."
+    vssadmin resize shadowstorage /for=C: /on=C: /maxsize=10%
+}
+
+
     #Disable sleep timers and create a restore point just in case
     Write-Host "Disabling sleep and monitor timeout & setting timezone"
     Write-Host "Creating Restore Point incase something bad happens"
@@ -506,8 +679,9 @@ $essentialtweaks.Add_Click({
 
     #Use O&O Shutup to automate a lot
 	Write-Host "Running O&O Shutup with Recommended Settings"
-    Import-Module BitsTransfer		choco install shutup10 -y
-	Start-BitsTransfer -Source "https://https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/ooshutup10.cfg" -Destination ooshutup10.cfg		OOSU10 ooshutup10.cfg /quiet
+    Import-Module BitsTransfer
+    choco install shutup10 -y
+	Start-BitsTransfer -Source "https://https://raw.githubusercontent.com/SMDCole/Windows-Setup/main/ooshutup10.cfg" -Destination ooshutup10.cfg
 	Start-BitsTransfer -Source "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -Destination OOSU10.exe	
 	./OOSU10.exe ooshutup10.cfg /quiet
     
@@ -864,7 +1038,7 @@ $Bloatware = @(
         "Microsoft.People"
         "Microsoft.Print3D"
         "Microsoft.SkypeApp"
-        "Microsoft.StorePurchaseApp"
+        #"Microsoft.StorePurchaseApp"
         "Microsoft.Wallet"
         "Microsoft.Whiteboard"
         "Microsoft.WindowsAlarms"
@@ -915,11 +1089,11 @@ $Bloatware = @(
         "*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
         "*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
         "*Microsoft.BingWeather*"
-        "*Microsoft.MSPaint*"
-        "*Microsoft.MicrosoftStickyNotes*"
-        "*Microsoft.Windows.Photos*"
-        "*Microsoft.WindowsCalculator*"
-        "*Microsoft.WindowsStore*"
+        #"*Microsoft.MSPaint*"
+        #"*Microsoft.MicrosoftStickyNotes*"
+        #"*Microsoft.Windows.Photos*"
+        #"*Microsoft.WindowsCalculator*"
+        #"*Microsoft.WindowsStore*"
     )
     #Use list to remove AppX software
     foreach ($Bloat in $Bloatware) {
@@ -966,6 +1140,14 @@ $Bloatware = @(
 			Set-ItemProperty $Class -Name NoOpenWith -Value "" 
 			Set-ItemProperty $Class -Name NoStaticDefaultVerb -Value "" 
 			} 
+
+    #Install net 3.5
+    Write-Output "`n`nInstalling Net 3.5 Framework..."
+    Add-WindowsCapability -Online -Name NetFX3~~~~
+
+    #Enables f8 boot menu
+    Write-Output "`n`nEnabling F8 boot menu..."
+    cmd.exe /c "bcdedit /set {default} bootmenupolicy legacy"
             
     
     #Removes Paint3D stuff from context menu
@@ -1049,29 +1231,29 @@ $securitylow.Add_Click({
     Write-Host "Lowering UAC level..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "PromptOnSecureDesktop" -Type DWord -Value 0
-    Write-Host "Disabling Windows Defender..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type DWord -Value 1
-	If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
-		Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "WindowsDefender" -ErrorAction SilentlyContinue
-	} ElseIf ([System.Environment]::OSVersion.Version.Build -ge 15063) {
-		Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "SecurityHealth" -ErrorAction SilentlyContinue
-	}
-    Write-Host "Disabling Windows Defender Cloud..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Force | Out-Null
-	}
+#    Write-Host "Disabling Windows Defender..."
+#	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender")) {
+#		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Force | Out-Null
+#	}
+#	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type DWord -Value 1
+#	If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
+#		Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "WindowsDefender" -ErrorAction SilentlyContinue
+#	} ElseIf ([System.Environment]::OSVersion.Version.Build -ge 15063) {
+#		Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "SecurityHealth" -ErrorAction SilentlyContinue
+#	}
+#   Write-Host "Disabling Windows Defender Cloud..."
+#	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet")) {
+#		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Force | Out-Null
+#	}
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2
     Write-Host "Disabling Meltdown (CVE-2017-5754) compatibility flag..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat" -Name "cadca5fe-87d3-4b96-b7fb-a231484277cc" -ErrorAction SilentlyContinue
-    Write-Host "Disabling Malicious Software Removal Tool offering..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontOfferThroughWUAU" -Type DWord -Value 1
+#   Write-Host "Disabling Malicious Software Removal Tool offering..."
+#	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT")) {
+#		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" | Out-Null
+#	}
+#	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontOfferThroughWUAU" -Type DWord -Value 1
 	$wshell.Popup("Operation Completed",0,"Done",0x0)
 })
 
@@ -1172,34 +1354,34 @@ $visualfx.Add_Click({
 })
 
 #uninstall OneDrive
-$onedrive.Add_Click({ 
-    Write-Host "Disabling OneDrive..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Type DWord -Value 1
-    Write-Host "Uninstalling OneDrive..."
-	Stop-Process -Name "OneDrive" -ErrorAction SilentlyContinue
-	Start-Sleep -s 2
-	$onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
-	If (!(Test-Path $onedrive)) {
-		$onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
-	}
-	Start-Process $onedrive "/uninstall" -NoNewWindow -Wait
-	Start-Sleep -s 2
-	Stop-Process -Name "explorer" -ErrorAction SilentlyContinue
-	Start-Sleep -s 2
-	Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-	Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-	Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-	Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
-	If (!(Test-Path "HKCR:")) {
-		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
-	}
-	Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
-	Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
-	$wshell.Popup("Operation Completed",0,"Done",0x0)
-})
+#$onedrive.Add_Click({ 
+#    Write-Host "Disabling OneDrive..."
+#	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {
+#		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" | Out-Null
+#	}
+#	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Type DWord -Value 1
+#   Write-Host "Uninstalling OneDrive..."
+#	Stop-Process -Name "OneDrive" -ErrorAction SilentlyContinue
+#	Start-Sleep -s 2
+#	$onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
+#	If (!(Test-Path $onedrive)) {
+#		$onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
+#	}
+#	Start-Process $onedrive "/uninstall" -NoNewWindow -Wait
+#	Start-Sleep -s 2
+#	Stop-Process -Name "explorer" -ErrorAction SilentlyContinue
+#	Start-Sleep -s 2
+#	Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+#	Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+#	Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+#	Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
+#	If (!(Test-Path "HKCR:")) {
+#		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+#	}
+#	Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+#	Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+#	$wshell.Popup("Operation Completed",0,"Done",0x0)
+#})
 
 #The good stuff
 $darkmode.Add_Click({ 
