@@ -83,13 +83,6 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 	Write-Host "Installing Automate"
     #msiexec.exe /I C:\Agent_Install
 
-#OO APP Buster
-    Write-Host "Running O&O App Buster"
-    $ProcName = "OOAPB.exe"
-    $Webfile = "https://dl5.oo-software.com/files/ooappbuster/OOAPB.exe"
-    (New-Object System.Net.WebClient).DownloadFile($WebFile, "$env:APPDATA\$ProcName")
-    Start-Process ("$env:APPDATA\$ProcName")
-
 #Install Java
     Write-Host "Installing Java SE Runtime Eviornment 8"
     choco install jre8 -y
