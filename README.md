@@ -1,7 +1,7 @@
 # Windows-Setup
 A setup script and resources for new systems coming through SystemsMD
 
-###NOTE: Automate does not install yet. That is a WIP. Any errors are because the corresponding XApp is not installed. This varies from SI to SI. I've tried to minimize the number of errors that occur###
+NOTE: Automate does not install yet. That is a WIP. Any errors are because the corresponding XApp is not installed. This varies from SI to SI. I've tried to minimize the number of errors that occur
 
 Run this in Powershell admin
 
