@@ -421,12 +421,16 @@ Function Install-Automate {
 
 #Install Adobe Reader 
     Write-Host "Installing Adobe Reader DC"
-    choco install adobereader -y
     Write-Host "This will take some time..."
+    choco install adobereader -y
 
 #Install 7-zip
     Write-Host "Installing 7-Zip Compression Tool"
     choco install 7zip -y
+
+#Install Infranview
+    Write-Host "Installing Irfanview (Image Viewer)"
+    winget install IrfanSkiljan.IrfanView | Out-Host
 
 #Use O&O Shutup to automate a lot
 	Write-Host "Running O&O Shutup with Recommended Settings"
