@@ -74,9 +74,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 ##########Automate install. Dynamic assignment by Cole Bermudez. Install script by Chuck Fowler##########
 
 #Install Automate (WIP)
-	Write-Host "Installing Automate"
-Import-Csv 
-
+Write-Host "Installing Automate"
 
 Function Install-Automate {
 <#
