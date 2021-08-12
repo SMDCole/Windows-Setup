@@ -55,7 +55,6 @@ Rename-Computer -NewName $compName
 Enable-ComputerRestore -Drive "$env:SystemDrive"
 
 #Disable sleep timers and create a restore point just in case
-Write-Host "Disabling sleep and monitor timeout & setting timezone"
 Write-Host "Creating Restore Point incase something bad happens"
 Checkpoint-Computer -Description "RestorePoint1" -RestorePointType "MODIFY_SETTINGS"
 Write-Host "Changing Power Settings"
@@ -76,6 +75,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 
 #Install Automate (WIP)
 	Write-Host "Installing Automate"
+Import-Csv 
 
 
 Function Install-Automate {
