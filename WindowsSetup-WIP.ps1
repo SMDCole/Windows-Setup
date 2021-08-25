@@ -54,6 +54,9 @@ Write-Output "`n`nSetting computer name, and enabling system restore..."
 Rename-Computer -NewName $compName
 Enable-ComputerRestore -Drive "$env:SystemDrive"
 
+#Force Restore point to not skip
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /V "SystemRestorePointCreationFrequency" /T REG_DWORD /D 0 /F
+
 #Disable sleep timers and create a restore point just in case
 Write-Host "Creating Restore Point incase something bad happens"
 Checkpoint-Computer -Description "RestorePoint1" -RestorePointType "MODIFY_SETTINGS"
@@ -75,6 +78,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 
 #Install Automate (WIP)
 Write-Host "Installing Automate"
+Install-Automate -Server 'systemsmd.hostedrmm.com' -LocationID 2 -Token 'adb68881994ed93960346478303476f4'
 
 Function Install-Automate {
 <#
@@ -1001,3 +1005,8 @@ $Paint3Dstuff = @(
 #	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUPowerManagement" -Type DWord -Value 0
 
 #DONE
+
+#TO DO
+#Change DWORD value for System Restore
+#Add dynamic automate
+#Add dynamic vipre (if possible)
