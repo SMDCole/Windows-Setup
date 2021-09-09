@@ -1,4 +1,4 @@
-﻿#Setup script
+#Setup script
 #For setting up new PCs Remotely
 #Created by Michael Bartlett
 #Added to by Cole Bermudez
