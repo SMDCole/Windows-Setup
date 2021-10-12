@@ -81,7 +81,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
 
 #Install Automate & ScreenConnect (WIP)
 	Write-Host "Installing Automate"
-    #msiexec.exe /I C:\Agent_Install
+    [Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072); Invoke-Expression(New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/Braingears/PowerShell/master/Automate-Module.psm1'); Install-Automate -Server 'systemsmd.hostedrmm.com' -LocationID 231 -Token '4bd8550a9733274fdc3c968dd443ea28' -Transcript
 
 #Install Java
     Write-Host "Installing Java SE Runtime Eviornment 8"
@@ -675,3 +675,7 @@ $Paint3Dstuff = @(
 #	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUPowerManagement" -Type DWord -Value 0
 
 #DONE
+
+#TO DO
+#Add dynamic automate
+#Add dynamic vipre (if possible)
