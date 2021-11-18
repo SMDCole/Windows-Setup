@@ -96,8 +96,8 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
     choco install 7zip -y
 
 #Install Infranview
-    Write-Host "Installing Irfanview (Image Viewer)"
-    winget install IrfanSkiljan.IrfanView | Out-Host
+#    Write-Host "Installing Irfanview (Image Viewer)"
+#    winget install IrfanSkiljan.IrfanView | Out-Host
 
 #Use O&O Shutup to automate a lot
 	Write-Host "Running O&O Shutup with Recommended Settings"
