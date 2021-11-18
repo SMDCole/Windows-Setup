@@ -54,12 +54,6 @@ Write-Output "`n`nSetting computer name, and enabling system restore..."
 Rename-Computer -NewName $compName
 Enable-ComputerRestore -Drive "$env:SystemDrive"
 
-#Force Restore point to not skip
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /V "SystemRestorePointCreationFrequency" /T REG_DWORD /D 0 /F
-
-#Disable sleep timers and create a restore point just in case
-Write-Host "Creating Restore Point incase something bad happens"
-Checkpoint-Computer -Description "RestorePoint1" -RestorePointType "MODIFY_SETTINGS"
 Write-Host "Changing Power Settings"
 powercfg.exe -change -monitor-timeout-ac 0
 powercfg.exe -change -monitor-timeout-dc 0
@@ -102,8 +96,8 @@ Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All
     choco install 7zip -y
 
 #Install Infranview
-#    Write-Host "Installing Irfanview (Image Viewer)"
-#    winget install IrfanSkiljan.IrfanView | Out-Host
+    Write-Host "Installing Irfanview (Image Viewer)"
+    winget install IrfanSkiljan.IrfanView | Out-Host
 
 #Use O&O Shutup to automate a lot
 	Write-Host "Running O&O Shutup with Recommended Settings"
